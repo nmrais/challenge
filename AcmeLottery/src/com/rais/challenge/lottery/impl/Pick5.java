@@ -1,4 +1,4 @@
-package com.rais.challenge.impl;
+package com.rais.challenge.lottery.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,11 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.rais.challenge.LotteryTicket;
+import com.rais.challenge.lottery.LotteryTicket;
+import com.rais.challenge.lottery.util.LotteryType;
 
-public class Pick4 implements LotteryTicket{
+public class Pick5 implements LotteryTicket{
 
-	public Pick4() {
+	public Pick5() {
 		super();
 		getLotteryPool();
 	}
@@ -20,7 +21,7 @@ public class Pick4 implements LotteryTicket{
 	public Map<Long, Boolean> getLotteryPool() {
 		if(null == lotteryPool || lotteryPool.values().isEmpty()){
 			lotteryPool = new HashMap<Long, Boolean>();
-			System.out.println("Lottery Pool for Pick 4 is provided below: \n");
+			System.out.println("Lottery Pool for Pick 5 is provided below: \n");
 			for(int i=0; i< numberOfLotteries(); i++){
 				Long lotteryNumber = generateLotteryNumber();
 				System.out.println("Lottery Number : "+lotteryNumber);
@@ -38,7 +39,7 @@ public class Pick4 implements LotteryTicket{
 
 	@Override
 	public Long generateLotteryNumber() {
-		return Math.round(Math.random() * 8999) + 1000;
+		return Math.round(Math.random() * 89999) + 10000;
 	}
 
 	@Override
@@ -55,7 +56,7 @@ public class Pick4 implements LotteryTicket{
 
 	@Override
 	public int numberOfLotteries() {
-		return 10;
+		return 20;
 	}
 
 	@Override
@@ -64,7 +65,11 @@ public class Pick4 implements LotteryTicket{
 		tickets.addAll(lotteryPool.keySet());
 		Collections.shuffle(tickets);
 		Long winner = tickets.get(0);
-		System.out.println("Winner for Pick 3 is Lottery Number : "+winner);
+		System.out.println("Winner for Pick 5 is Lottery Number : "+winner);
 		return winner;
+	}
+	
+	public static LotteryType getLotteryType() {
+		return LotteryType.PICK5;
 	}
 }

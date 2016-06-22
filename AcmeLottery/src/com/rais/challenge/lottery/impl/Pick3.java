@@ -1,4 +1,4 @@
-package com.rais.challenge.impl;
+package com.rais.challenge.lottery.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.rais.challenge.LotteryTicket;
+import com.rais.challenge.lottery.LotteryTicket;
+import com.rais.challenge.lottery.util.LotteryType;
 
 public class Pick3 implements LotteryTicket{
 
@@ -54,7 +55,7 @@ public class Pick3 implements LotteryTicket{
 
 	@Override
 	public int numberOfLotteries() {
-		return 10;
+		return 20;
 	}
 
 	@Override
@@ -65,5 +66,9 @@ public class Pick3 implements LotteryTicket{
 		Long winner = tickets.get(0);
 		System.out.println("Winner for Pick 3 is Lottery Number : "+winner);
 		return winner;
+	}
+	
+	public static LotteryType getLotteryType() {
+		return LotteryType.PICK3;
 	}
 }

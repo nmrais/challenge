@@ -1,4 +1,4 @@
-package com.rais.challenge;
+package com.rais.challenge.lottery;
 
 public interface LotteryTicket {
 
