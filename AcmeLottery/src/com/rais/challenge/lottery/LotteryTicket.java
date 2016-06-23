@@ -29,4 +29,9 @@ public interface LotteryTicket {
 	 * @return
 	 */
 	public Long drawWinner();
+	/**
+	 * This operation returns a valid lottery number
+	 * @return
+	 */
+	public Long pickRandomLottery();
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.rais.challenge.lottery.LotteryTicket;
 import com.rais.challenge.lottery.util.LotteryType;
@@ -21,15 +22,16 @@ public class Pick5 implements LotteryTicket{
 	public Map<Long, Boolean> getLotteryPool() {
 		if(null == lotteryPool || lotteryPool.values().isEmpty()){
 			lotteryPool = new HashMap<Long, Boolean>();
-			System.out.println("Lottery Pool for Pick 5 is provided below: \n");
+			System.out.println("Lottery Pool for Pick 3 is provided below: \n");
 			for(int i=0; i< numberOfLotteries(); i++){
 				Long lotteryNumber = generateLotteryNumber();
 				System.out.println("Lottery Number : "+lotteryNumber);
-				lotteryPool.put(lotteryNumber, false);
+				if(!lotteryPool.containsKey(lotteryNumber)) {
+					lotteryPool.put(lotteryNumber, false);
+				}
 			}
 			System.out.println("Lottery Pool : "+lotteryPool.toString()+"\n");
 		}
-		
 		return lotteryPool;
 	}
 
@@ -71,5 +73,26 @@ public class Pick5 implements LotteryTicket{
 	
 	public static LotteryType getLotteryType() {
 		return LotteryType.PICK5;
+	}
+
+	@Override
+	public Long pickRandomLottery() {
+		List<Long> lotteries = new ArrayList<Long>();
+		for(Long number : lotteryPool.keySet()) {
+			if(!lotteryPool.get(number)){
+				// If the number is not picked, then add to the list of available lotteries
+				lotteries.add(number);
+			}
+		}
+		if(!lotteries.isEmpty()) {
+			int index = new Random().nextInt(lotteries.size());
+			Long randomPick = lotteries.get(index);
+			// Once the lottery is picked, then set the boolean to true
+			lotteryPool.put(randomPick, true);
+			System.out.println("Lottery Number allocated is "+randomPick);
+			return randomPick;
+		}
+		System.out.println("All tickets sold out for Pick 5");
+		return 0L;
 	}
 }

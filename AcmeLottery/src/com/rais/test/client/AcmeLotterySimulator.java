@@ -3,6 +3,7 @@ package com.rais.test.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,6 +16,9 @@ import com.rais.challenge.lottery.impl.Pick5;
 import com.rais.challenge.lottery.util.LotteryType;
 
 public class AcmeLotterySimulator {
+	private static boolean pick3SoldOut = false;
+	private static boolean pick4SoldOut = false;
+	private static boolean pick5SoldOut = false;
 	
 	public static void main(String[] hh) {
 		System.out.println("Lottery Initialized. \n");
@@ -23,26 +27,37 @@ public class AcmeLotterySimulator {
 		Pick5 pick5 = new Pick5();
 		
 		/** The simulation of lottery pool generation **/
-		Map<Long, Boolean> pick3Pool = pick3.getLotteryPool();
-		Map<Long, Boolean> pick4Pool = pick4.getLotteryPool();
-		Map<Long, Boolean> pick5Pool = pick5.getLotteryPool();
+		pick3.getLotteryPool();
+		pick4.getLotteryPool();
+		pick5.getLotteryPool();
 		
 		
 		/** The simulation of customer buying lotteries **/
-		//TODO
 		List<Customer> customerPool = new ArrayList<Customer>();
-		for(int i=0; i< 10; i++) {
-			Customer customer = new Customer("lastName"+i, "firstName"+i, "customer_"+i+"@gmail.com", String.valueOf((i+1)*25+3-2*7));
+		boolean isSoldOut = false;
+		for(int i=0; i< 25; i++) {
+			Customer customer = new Customer("lastName"+(i+1), "firstName"+(i+1), "customer_"+(i+1)+"@gmail.com", String.valueOf((i+1)*25+3-2*7));
 			Integer picks = getRandomNumberOfTicketPicks(i);
-			allocateTicketsToCustomer(customer, picks, pick3Pool, pick4Pool, pick5Pool);
+			if(!pick3SoldOut || !pick4SoldOut || !pick5SoldOut){
+				allocateTicketsToCustomer(customer, picks, pick3, pick4, pick5);
+			} else {
+				isSoldOut = true;
+			}
+			if(!isSoldOut){
+				System.out.println("Customer Name: "+ customer.getFullName()+" Customer Cart : "+customer.getLotteryCart());
+				customerPool.add(customer);
+			} 
+			
 		}
 		
 		Map<Long, LotteryType> winnerMap = drawWinnerLotteries(pick3, pick4, pick5);
+		
 		findWinningCustomerAndDisplayResults(customerPool, winnerMap);
 	}
 
 	/**
 	 * This operation checks for the winning customer and displays the end results
+	 * 
 	 * @param customerPool
 	 * @param winnerMap
 	 */
@@ -53,10 +68,15 @@ public class AcmeLotterySimulator {
 			Map<Long, LotteryType> customerLotteryCart = customer.getLotteryCart();
 			Set<Long> customerLotteries = customerLotteryCart.keySet();
 			Set<Long> winnerSet = winnerMap.keySet();
-			winnerSet.retainAll(customerLotteries);
-			if(winnerSet.size() > 0) {
+			Set<Long> customerWinnerSet = new HashSet<Long>();
+			for(Long winner : winnerSet) {
+				if(customerLotteries.contains(winner)){
+					customerWinnerSet.add(winner);
+				}
+			}
+			if(customerWinnerSet.size() > 0) {
 				Map<Long, LotteryType> winningLottery = new HashMap<Long, LotteryType>();
-				for(Long lotteryNumber: winnerSet) {
+				for(Long lotteryNumber: customerWinnerSet) {
 					winningLottery.put(lotteryNumber, winnerMap.get(lotteryNumber));
 					System.out.println("Winner for "+winnerMap.get(lotteryNumber)+" Lottery is "+customer.getFullName()+".");
 				}
@@ -85,9 +105,37 @@ public class AcmeLotterySimulator {
 	 * @param pick4Pool
 	 * @param pick5Pool
 	 */
-	private static void allocateTicketsToCustomer(Customer customer, Integer picks, Map<Long, Boolean> pick3Pool, Map<Long, Boolean> pick4Pool, Map<Long, Boolean> pick5Pool) {
-		// TODO Auto-generated method stub
+	private static boolean allocateTicketsToCustomer(Customer customer, Integer picks, Pick3 pick3, Pick4 pick4, Pick5 pick5) {
+		Map<Long, LotteryType> lotteryCart = new HashMap<Long, LotteryType>();
 		
+		for(int i=0; i<picks; i++){
+			Integer randomPick = getRandomPickPool();
+			Long lottery = 0L;
+			if(randomPick == 3){
+				lottery = pick3.pickRandomLottery();
+				if(lottery != 0L && !pick3SoldOut){
+					lotteryCart.put(lottery, LotteryType.PICK3);
+				} else {
+					pick3SoldOut = true;
+				}
+			} else if (randomPick == 4) {
+				lottery = pick4.pickRandomLottery();
+				if(lottery != 0L && !pick4SoldOut){
+					lotteryCart.put(lottery, LotteryType.PICK4);
+				} else {
+					pick4SoldOut = true;
+				}
+			} else if (randomPick == 5){
+				lottery = pick5.pickRandomLottery();
+				if(lottery != 0L && !pick5SoldOut){
+					lotteryCart.put(lottery, LotteryType.PICK5);
+				} else {
+					pick5SoldOut = true;
+				}
+			}
+		}
+		customer.setLotteryCart(lotteryCart);
+		return true;
 	}
 
 	/**
@@ -122,6 +170,40 @@ public class AcmeLotterySimulator {
 		Integer randomPick = numberOfPicks.get(index);
 		System.out.println("Customer # "+customerID+" gets to pick "+randomPick+" lotteries");
 		return randomPick;
+	}
+	
+	/**
+	 * This operation returns the random number of picks for a customer.
+	 * @param customerID
+	 * @return
+	 */
+	private static Integer getRandomPickPool() {
+		List<Integer> numberOfPicks = new ArrayList<Integer>();
+		if(!pick3SoldOut && !pick4SoldOut && !pick5SoldOut){
+			numberOfPicks = Arrays.asList(3,4,5);
+		} else if(!pick3SoldOut && !pick4SoldOut && pick5SoldOut) {
+			numberOfPicks = Arrays.asList(3,4);
+		} else if(!pick3SoldOut && pick4SoldOut && !pick5SoldOut){
+			numberOfPicks = Arrays.asList(3,5);
+		} else if(pick3SoldOut && !pick4SoldOut && !pick5SoldOut){
+			numberOfPicks = Arrays.asList(4,5);
+		} else if(pick3SoldOut && pick4SoldOut && !pick5SoldOut){
+			System.out.println("Pick 5 is selected for next pick.");
+			return 5;
+		} else if(!pick3SoldOut && pick4SoldOut && pick5SoldOut){
+			System.out.println("Pick 3 is selected for next pick.");
+			return 3;
+		} else if(pick3SoldOut && !pick4SoldOut && pick5SoldOut){
+			System.out.println("Pick 4 is selected for next pick.");
+			return 4;
+		} 
+		if(!numberOfPicks.isEmpty()) {
+			int index = new Random().nextInt(numberOfPicks.size());
+			Integer randomPick = numberOfPicks.get(index);
+			System.out.println("Pick "+randomPick+ "is selected for next pick.");
+			return randomPick;
+		}
+		return 0;
 	}
 
 }
