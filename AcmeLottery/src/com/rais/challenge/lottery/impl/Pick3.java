@@ -58,7 +58,7 @@ public class Pick3 implements LotteryTicket{
 
 	@Override
 	public int numberOfLotteries() {
-		return 20;
+		return 50;
 	}
 
 	@Override

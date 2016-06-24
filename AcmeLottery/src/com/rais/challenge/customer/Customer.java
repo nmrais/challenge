@@ -1,10 +1,16 @@
 package com.rais.challenge.customer;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.rais.challenge.lottery.util.LotteryType;
 
-public class Customer {
+public class Customer implements Serializable{
+	
+	/**
+	 * Auto generated Serial Version UID
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	private String lastName;
 	private String firstName;
@@ -13,7 +19,21 @@ public class Customer {
 	private Map<Long, LotteryType> lotteryCart;
 	private Map<Long, LotteryType> winningLottery;
 	
+	/**
+	 * Default Constructor
+	 */
+	public Customer(){
+		super();
+	}
 	
+	/**
+	 * Parameterized Constructor
+	 * 
+	 * @param lastName
+	 * @param firstName
+	 * @param email
+	 * @param id
+	 */
 	public Customer(String lastName, String firstName, String email, String id) {
 		super();
 		this.lastName = lastName;
@@ -100,5 +120,5 @@ public class Customer {
 	public String getFullName() {
 		return firstName+" "+lastName;
 	}
-
+	
 }
