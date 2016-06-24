@@ -22,7 +22,7 @@ public class Pick5 implements LotteryTicket{
 	public Map<Long, Boolean> getLotteryPool() {
 		if(null == lotteryPool || lotteryPool.values().isEmpty()){
 			lotteryPool = new HashMap<Long, Boolean>();
-			System.out.println("Lottery Pool for Pick 3 is provided below: \n");
+			System.out.println("Lottery Pool for Pick 5 is provided below: \n");
 			for(int i=0; i< numberOfLotteries(); i++){
 				Long lotteryNumber = generateLotteryNumber();
 				System.out.println("Lottery Number : "+lotteryNumber);
