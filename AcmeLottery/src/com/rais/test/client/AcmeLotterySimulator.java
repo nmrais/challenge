@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Set;
 
 import com.rais.challenge.customer.Customer;
@@ -23,7 +24,10 @@ public class AcmeLotterySimulator {
 	private static boolean pick4SoldOut = false;
 	private static boolean pick5SoldOut = false;
 	private static final String CUSTOMER_PROP = "customer.properties";
+	private static List<String> soldOutAttempts = new ArrayList<String>();
+	private static Scanner scanner;
 
+	
 	public static void main(String[] hh) {
 		System.out.println("Lottery Initialized. \n");
 		Pick3 pick3 = new Pick3();
@@ -55,7 +59,128 @@ public class AcmeLotterySimulator {
 
 		Map<Long, LotteryType> winnerMap = drawWinnerLotteries(pick3, pick4, pick5);
 
-		findWinningCustomerAndDisplayResults(buyersPool, winnerMap);
+		List<Customer> winners = new ArrayList<Customer>();
+		findWinningCustomerAndDisplayResults(buyersPool, winnerMap, winners);
+		System.out.println("Drawing completed and winners established. ");
+		System.out.println("Please refer to the reports for more details. \n");
+		String selection = "";
+		loadReports(selection, buyersPool, winners, winnerMap);
+		
+	}
+
+	private static void loadReports(String selection, List<Customer> buyersPool, List<Customer> winners, Map<Long, LotteryType> winnerMap) {
+		selection = displayReportSection();
+		if(selection.equalsIgnoreCase("1")) {
+			System.out.println("The total number of customers that purchased the tickets today is "+buyersPool.size());
+		} else if (selection.equalsIgnoreCase("2")){
+			displayCustomerTicketTypeReport(buyersPool);
+		} else if (selection.equalsIgnoreCase("3")){
+			displayCustomerSoldOutTicketInfo();
+		} else if (selection.equalsIgnoreCase("4")){
+		   displayWinnerDetails(winners);
+		} else if (selection.equalsIgnoreCase("5")){
+		   displayWinningNumbers(winnerMap);
+		} else if (selection.equalsIgnoreCase("6")){
+			System.out.println("Exiting the ACME Lottery Simulation. Good Bye.");
+			System.exit(0);
+		} else {
+			System.out.println("Wrong Selection. Please select a valid option.");
+		}
+		loadReports(selection, buyersPool, winners, winnerMap);
+	}
+
+	
+	private static void displayWinningNumbers(Map<Long, LotteryType> winnerMap) {
+		if (!winnerMap.isEmpty()) {
+			System.out.println("------------------------------------");
+			System.out.println("| Lottery Category | Winning Number |");
+			System.out.println("------------------------------------");
+			for (Long number : winnerMap.keySet()) {
+				System.out.println("|"+padRight(winnerMap.get(number).toString(),18)+"|"+padRight(String.valueOf(number),16)+"|");
+			}
+			System.out.println("------------------------------------");
+		}
+		
+	}
+
+	private static void displayWinnerDetails(List<Customer> winners) {
+		if (!winners.isEmpty()) {
+			System.out.println("----------------------------------------------------------------------------------------");
+			System.out.println("|Customer Name                                      | Lottery Category | Lottery Number |");
+			System.out.println("----------------------------------------------------------------------------------------");
+			for (Customer customer : winners) {
+				Map<Long, LotteryType> winningLottery = customer.getWinningLottery();
+				for (Long lottery : winningLottery.keySet()) {
+					System.out.println("|"+padRight(customer.getFullName(),51)+"|"+padRight(winningLottery.get(lottery).toString(),18)+"|"+padRight(String.valueOf(lottery),16)+"|");
+				}
+			}
+			System.out.println("----------------------------------------------------------------------------------------");
+		}
+	}
+
+	private static void displayCustomerSoldOutTicketInfo() {
+		if(!soldOutAttempts.isEmpty()) {
+			System.out.println("-------------------------------------------------------------------------------------------");
+			System.out.println("|Customer Name                                      | Pick 3   | Pick 4     | Pick 5       |");
+			System.out.println("-------------------------------------------------------------------------------------------");
+			for(String info : soldOutAttempts){
+				String[] infoSplit = info.split("\\|");
+				if(infoSplit[1].equalsIgnoreCase("PICK 3")) {
+					System.out.println("|"+padRight(infoSplit[0],51)+"|"+padRight("*",10)+"|"+padRight("",12)+"|"+padRight("",14)+"|");
+				} else if(infoSplit[1].equalsIgnoreCase("PICK 4")) {
+					System.out.println("|"+padRight(infoSplit[0],51)+"|"+padRight("",10)+"|"+padRight("*",12)+"|"+padRight("",14)+"|");
+				} else if(infoSplit[1].equalsIgnoreCase("PICK 5")) {
+					System.out.println("|"+padRight(infoSplit[0],51)+"|"+padRight("",10)+"|"+padRight("",12)+"|"+padRight("*",14)+"|");
+				}
+				System.out.println("-------------------------------------------------------------------------------------------");
+			}
+		} else {
+			System.out.println("No users attempted to buy a sold-out ticket.");
+		}
+	}
+
+	private static void displayCustomerTicketTypeReport(List<Customer> buyersPool) {
+		String blank10 = new String("          ");
+		String blank12 = new String("            ");
+		String blank14 = new String("              ");
+		System.out.println("-------------------------------------------------------------------------------------------");
+		System.out.println("|Customer Name                                      | Pick 3   | Pick 4     | Pick 5       |");
+		System.out.println("-------------------------------------------------------------------------------------------");
+		for(Customer customer: buyersPool){
+			String buyerName = customer.getFullName();
+			boolean isNamePrinted = false;
+			for(Long ticketNumber : customer.getLotteryCart().keySet()){
+				if(customer.getLotteryCart().get(ticketNumber) == LotteryType.PICK3){
+					System.out.println("|"+padRight(isNamePrinted ? "" : buyerName,51)+"|"+padRight(String.valueOf(ticketNumber),10)+"|"+blank12+"|"+blank14+"|");
+					if(!isNamePrinted) {isNamePrinted = true;}
+				} else if(customer.getLotteryCart().get(ticketNumber) == LotteryType.PICK4) {
+					System.out.println("|"+padRight(isNamePrinted ? "" : buyerName,51)+"|"+blank10+"|"+padRight(String.valueOf(ticketNumber),12)+"|"+blank14+"|");
+					if(!isNamePrinted) {isNamePrinted = true;}
+				} else if(customer.getLotteryCart().get(ticketNumber) == LotteryType.PICK5) {
+					System.out.println("|"+padRight(isNamePrinted ? "" : buyerName,51)+"|"+blank10+"|"+blank12+"|"+padRight(String.valueOf(ticketNumber),14)+"|");
+					if(!isNamePrinted) {isNamePrinted = true;}
+				}
+			}
+			System.out.println("-------------------------------------------------------------------------------------------");
+		}
+	}
+
+	private static String displayReportSection() {
+		System.out.println("\n\n");
+		System.out.println("*****************************************************************");
+		System.out.println("************************ Reports Center *************************");
+		System.out.println("*****************************************************************");
+		System.out.println("\n\n");
+		System.out.println("1. How many customers purchased tickets?");
+		System.out.println("2. What type of tickets did each customer purchase?");
+		System.out.println("3. Did customers attempt to purchase sold out ticket types?");
+		System.out.println("4. Which customers won the drawing for each ticket type?");
+		System.out.println("5. Which numbers were selected during the drawing?");
+		System.out.println("6. Exit");
+		System.out.print("Please enter your selection : ");
+		scanner = new Scanner(System.in);
+		String selection = scanner.nextLine();
+		return selection;
 	}
 
 	/**
@@ -104,9 +229,8 @@ public class AcmeLotterySimulator {
 	 * @param customerPool
 	 * @param winnerMap
 	 */
-	private static void findWinningCustomerAndDisplayResults(List<Customer> customerPool, Map<Long, LotteryType> winnerMap) {
+	private static void findWinningCustomerAndDisplayResults(List<Customer> customerPool, Map<Long, LotteryType> winnerMap, List<Customer> winners) {
 		/** The simulation of picking up the winner based on winner lotteries **/
-		List<Customer> winners = new ArrayList<Customer>();
 		for (Customer customer : customerPool) {
 			Map<Long, LotteryType> customerLotteryCart = customer.getLotteryCart();
 			Set<Long> customerLotteries = customerLotteryCart.keySet();
@@ -121,20 +245,9 @@ public class AcmeLotterySimulator {
 				Map<Long, LotteryType> winningLottery = new HashMap<Long, LotteryType>();
 				for (Long lotteryNumber : customerWinnerSet) {
 					winningLottery.put(lotteryNumber, winnerMap.get(lotteryNumber));
-					System.out.println("Winner for " + winnerMap.get(lotteryNumber) + " Lottery is " + customer.getFullName() + ".");
 				}
 				customer.setWinningLottery(winningLottery);
 				winners.add(customer);
-			}
-		}
-
-		if (!winners.isEmpty()) {
-			System.out.println("The winners are listed below:");
-			for (Customer customer : winners) {
-				Map<Long, LotteryType> winningLottery = customer.getWinningLottery();
-				for (Long lottery : winningLottery.keySet()) {
-					System.out.println("Winner Name : " + customer.getFullName() + " Lottery Number : " + lottery + " Lottery Category : " + LotteryType.getLabel(winningLottery.get(lottery)));
-				}
 			}
 		}
 	}
@@ -161,6 +274,7 @@ public class AcmeLotterySimulator {
 					lotteryCart.put(lottery, LotteryType.PICK3);
 				} else {
 					pick3SoldOut = true;
+					soldOutAttempts.add(customer.getFullName()+"|PICK 3");
 				}
 			} else if (randomPick == 4) {
 				lottery = pick4.pickRandomLottery();
@@ -168,6 +282,7 @@ public class AcmeLotterySimulator {
 					lotteryCart.put(lottery, LotteryType.PICK4);
 				} else {
 					pick4SoldOut = true;
+					soldOutAttempts.add(customer.getFullName()+"|PICK 4");
 				}
 			} else if (randomPick == 5) {
 				lottery = pick5.pickRandomLottery();
@@ -175,6 +290,7 @@ public class AcmeLotterySimulator {
 					lotteryCart.put(lottery, LotteryType.PICK5);
 				} else {
 					pick5SoldOut = true;
+					soldOutAttempts.add(customer.getFullName()+"|PICK 5");
 				}
 			}
 		}
@@ -252,4 +368,12 @@ public class AcmeLotterySimulator {
 		return 0;
 	}
 
+	public static String padRight(String s, int n) {
+	     return String.format("%1$-" + n + "s", s);  
+	}
+
+	public static String padLeft(String s, int n) {
+	    return String.format("%1$" + n + "s", s);  
+	}
+	
 }

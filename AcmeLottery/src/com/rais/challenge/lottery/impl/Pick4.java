@@ -67,7 +67,6 @@ public class Pick4 implements LotteryTicket{
 		tickets.addAll(lotteryPool.keySet());
 		Collections.shuffle(tickets);
 		Long winner = tickets.get(0);
-		System.out.println("Winner for Pick 4 is Lottery Number : "+winner);
 		return winner;
 	}
 	

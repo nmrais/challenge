@@ -67,7 +67,6 @@ public class Pick3 implements LotteryTicket{
 		tickets.addAll(lotteryPool.keySet());
 		Collections.shuffle(tickets);
 		Long winner = tickets.get(0);
-		System.out.println("Winner for Pick 3 is Lottery Number : "+winner);
 		return winner;
 	}
 	
